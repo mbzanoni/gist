@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estudio online</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --surface: #111318;
+      --surface2: #191c24;
+      --border: #252830;
+      --border2: #2e3240;
+      --text: #dde1f0;
+      --text-muted: #7a819a;
+      --accent: #4f8ef7;
+      --accent2: #3dd68c;
+      --danger: #ff6b6b;
+      --twitter-blue: #1d9bf0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 4px;
+      background: var(--surface);
+    }
+    .topbar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* SECTIONS */
+    .section { display: none; animation: fadeUp 0.35s ease both; }
+    .section.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+    h2 { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 10px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+
+    p { line-height: 1.6; color: var(--text); font-size: 14.5px; margin-bottom: 10px; }
+    p:last-child { margin-bottom: 0; }
+
+    .hint { font-size: 13px; color: var(--text-muted); }
+    .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px; border: none; border-radius: 10px;
+      cursor: pointer; font-weight: 600; font-size: 14px;
+      font-family: 'Sora', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #3a7de8; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+    /* FORM */
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; margin-top: 14px; }
+    input[type="number"], select {
+      width: 100%; padding: 11px 14px;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border2); border-radius: 9px;
+      font-family: 'Sora', sans-serif; font-size: 14px;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none; border-color: var(--accent);
+    }
+    select option { background: var(--surface2); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+    /* ERROR */
+    .error-box {
+      background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
+      border-radius: 9px; padding: 12px 16px;
+      color: var(--danger); font-size: 13.5px;
+      margin-top: 12px; display: none;
+    }
+    .error-box.show { display: block; }
+
+    /* STATUS */
+    .status-bar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 14px;
+      font-size: 12px; color: var(--text-muted);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+    .status-dot.err { background: var(--danger); }
+
+    /* ===================== TWITTER SIMULATOR ===================== */
+    .twitter-wrap {
+      background: #000;
+      border: 1px solid #2f3336;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .tw-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid #2f3336;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tw-header svg { color: #fff; }
+    .tw-header span { color: #fff; font-weight: 700; font-size: 18px; }
+
+    .tw-feed { max-height: 520px; overflow-y: auto; }
+    .tw-feed::-webkit-scrollbar { width: 4px; }
+    .tw-feed::-webkit-scrollbar-track { background: transparent; }
+    .tw-feed::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+    .tweet {
+      padding: 14px 16px;
+      border-bottom: 1px solid #2f3336;
+      display: flex; gap: 12px;
+      transition: background 0.15s;
+      cursor: default;
+    }
+    .tweet:hover { background: rgba(255,255,255,0.02); }
+
+    .tweet-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px; color: #fff;
+    }
+
+    .tweet-body { flex: 1; min-width: 0; }
+
+    .tweet-meta {
+      display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; flex-wrap: wrap;
+    }
+    .tweet-name { color: #fff; font-weight: 700; font-size: 14px; }
+    .tweet-handle { color: #71767b; font-size: 13px; }
+    .tweet-time { color: #71767b; font-size: 13px; }
+
+    .tweet-text {
+      color: #e7e9ea; font-size: 14.5px; line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .tweet-actions {
+      display: flex; gap: 20px; align-items: center;
+    }
+    .tweet-action {
+      display: flex; align-items: center; gap: 5px;
+      color: #71767b; font-size: 13px;
+      cursor: pointer; transition: color 0.15s;
+      background: none; border: none; padding: 4px 0;
+      font-family: 'Sora', sans-serif;
+    }
+    .tweet-action:hover { color: var(--twitter-blue); }
+    .tweet-action.liked { color: #f91880; }
+    .tweet-action svg { width: 17px; height: 17px; }
+
+    .tw-scroll-hint {
+      padding: 14px; text-align: center;
+      color: #71767b; font-size: 13px;
+      border-top: 1px solid #2f3336;
+    }
+
+    /* ===================== SLIDER ===================== */
+    .slider-wrap { margin: 20px 0; }
+
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="range"] {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 6px; border-radius: 3px;
+      background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--val, 50%), var(--border2) var(--val, 50%), var(--border2) 100%);
+      outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #fff; border: 3px solid var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+    .slider-value {
+      text-align: center; margin-top: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 22px; font-weight: 600; color: var(--accent);
+    }
+
+    /* headline display */
+    .headline-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .headline-source {
+      font-size: 11px; color: var(--accent); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .headline-text {
+      font-size: 17px; font-weight: 600; color: #fff; line-height: 1.35;
+    }
+
+    /* PROGRESS */
+    .progress-label {
+      font-size: 12px; color: var(--text-muted);
+      text-align: right; margin-bottom: 10px;
+    }
+    .progress-bar-wrap {
+      height: 3px; background: var(--border);
+      border-radius: 2px; margin-bottom: 20px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.4s ease;
+    }
+
+    /* FINISH */
+    .finish-icon {
+      font-size: 52px; text-align: center; margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="globalProgress"></div></div>
+
+<div class="container">
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Iniciando…</span>
+  </div>
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- ===== 0. CONSENTIMIENTO ===== -->
+  <div class="section active" id="sec-consent">
+    <div class="card">
+      <h1>Consentimiento informado</h1>
+      <div class="divider"></div>
+      <p>El presente estudio es realizado con fines académicos por investigadores de la Universidad Torcuato Di Tella (Av. Figueroa Alcorta 7350, CABA, Argentina). Se estima que participarán aproximadamente 400 personas. La participación consiste en completar una tarea online de aproximadamente 15 minutos de duración.</p>
+      <p>La participación en este estudio no conlleva ningún riesgo. Tu participación es completamente voluntaria y podés interrumpirla en cualquier momento sin necesidad de dar explicaciones.</p>
+      <p>Los datos recolectados serán tratados de forma anónima y confidencial, y utilizados exclusivamente con fines académicos y de investigación.</p>
+      <p>Si tenés alguna duda, podés comunicarte a: <span class="mono"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bad7d8c0dbd4d5d4d3faddd7dbd3d694d9d5d7">[email&#160;protected]</a></span></p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-consent-yes">Sí, acepto participar</button>
+        <button class="btn btn-ghost" id="btn-consent-no">No acepto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 0.5. EDAD ===== -->
+  <div class="section" id="sec-age">
+    <div class="card">
+      <h2>Confirmación de edad</h2>
+      <p style="margin-top:10px;">Para participar en este estudio, necesitás ser mayor de 18 años.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-age-yes">Soy mayor de 18 años</button>
+        <button class="btn btn-ghost" id="btn-age-no">No soy mayor de 18 años</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 1. SOCIODEMOGRÁFICAS ===== -->
+  <div class="section" id="sec-demo">
+    <div class="card">
+      <h2>Datos generales</h2>
+      <p class="hint" style="margin-top:4px;">Completá los siguientes datos antes de continuar.</p>
+      <div class="form-grid">
+        <div>
+          <label for="edad">Edad</label>
+          <input type="number" id="edad" min="18" max="99" placeholder="Ej: 28" />
+        </div>
+        <div>
+          <label for="genero">Género</label>
+          <select id="genero">
+            <option value="" disabled selected>Seleccioná</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="NB">No binario</option>
+            <option value="NA">Prefiero no decir</option>
+          </select>
+        </div>
+        <div>
+          <label for="provincia">Provincia</label>
+          <select id="provincia">
+            <option value="" disabled selected>Seleccioná</option>
+          </select>
+        </div>
+        <div>
+          <label for="educativo">Nivel educativo</label>
+          <select id="educativo">
+            <option value="" disabled selected>Seleccioná</option>
+            <option value="primario_incompleto">Primario incompleto</option>
+            <option value="primario_completo">Primario completo</option>
+            <option value="secundario_incompleto">Secundario incompleto</option>
+            <option value="secundario_completo">Secundario completo</option>
+            <option value="superior_universitario_incompleto">Superior/Univ. incompleto</option>
+            <option value="superior_universitario_completo">Superior/Univ. completo</option>
+            <option value="posgrado_incompleto">Posgrado incompleto</option>
+            <option value="posgrado_completo">Posgrado completo</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-demo-next">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2. INSTRUCCIONES TWITTER ===== -->
+  <div class="section" id="sec-twitter-intro">
+    <div class="card">
+      <h2>Parte 1 — Feed de noticias</h2>
+      <div class="divider"></div>
+      <p>A continuación vas a ver un feed de noticias, similar a las que aparecen en redes sociales.</p>
+      <p>Scrolleá y leé los titulares con calma. Si alguno te genera interés, podés darle <strong>Me gusta</strong> (❤️). No hay respuestas correctas ni incorrectas.</p>
+      <p class="hint">Cuando hayas revisado todos los titulares, vas a ver un botón para continuar al fondo del feed.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-twitter-start">Ver el feed →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3. TWITTER ===== -->
+  <div class="section" id="sec-twitter">
+    <div class="twitter-wrap">
+      <div class="tw-header">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.741-8.859L1.254 2.25H8.08l4.259 5.633L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span>Para vos</span>
+      </div>
+      <div class="tw-feed" id="twFeed"></div>
+      <div class="tw-scroll-hint" id="twScrollHint" style="display:none;">
+        <button class="btn btn-primary" id="btn-twitter-done" style="width:100%;">
+          Ya revisé todos los titulares → Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. INSTRUCCIONES CAUSALIDAD ===== -->
+  <div class="section" id="sec-causal-intro">
+    <div class="card">
+      <h2>Parte 2 — Preguntas sobre los titulares</h2>
+      <div class="divider"></div>
+      <p>Ahora vas a ver nuevamente cada titular, de a uno. Para cada uno, te vamos a hacer una pregunta.</p>
+      <p>Respondé usando el <strong>deslizador</strong>: movelo hacia donde mejor represente tu opinión.</p>
+      <div style="background:var(--surface2); border:1px solid var(--border2); border-radius:10px; padding:16px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
+          <span>0 — Definitivamente NO lo causa</span>
+          <span>100 — Definitivamente SÍ lo causa</span>
+        </div>
+        <div style="height:6px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:3px; margin-top:8px;"></div>
+      </div>
+      <p class="hint" style="margin-top:14px;">Vas a responder los <strong>33 titulares</strong>. Por favor, respondé con atención.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-causal-start">Comenzar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. TAREA CAUSALIDAD ===== -->
+  <div class="section" id="sec-causal">
+    <div class="progress-label" id="causalProgress">Ítem 1 de 33</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="causalBar" style="width:0%"></div>
+    </div>
+
+    <div class="card">
+      <div class="headline-card">
+        <div class="headline-source" id="causalSource">Fuente</div>
+        <div class="headline-text" id="causalHeadline">Titular</div>
+      </div>
+
+      <h3 id="causalQuestion">Pregunta</h3>
+
+      <div class="slider-wrap">
+        <div class="slider-labels">
+          <span>0 — Definitivamente NO lo causa</span>
+          <span>100 — Definitivamente SÍ lo causa</span>
+        </div>
+        <input type="range" id="causalSlider" min="0" max="100" value="50" />
+        <div class="slider-value" id="causalSliderVal">50</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-causal-next">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. COMPROMISO ===== -->
+  <div class="section" id="sec-commit">
+    <div class="card">
+      <h2>Pregunta final</h2>
+      <p style="margin-top:10px;">¿Considerás que respondiste de manera sincera y comprometida a lo largo del estudio?</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-commit-yes">Sí, respondí con sinceridad</button>
+        <button class="btn btn-ghost" id="btn-commit-no">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 7. FIN ===== -->
+  <div class="section" id="sec-end">
+    <div class="card" style="text-align:center;">
+      <div class="finish-icon">🎉</div>
+      <h2>¡Muchas gracias por participar!</h2>
+      <div class="divider"></div>
+      <p>Tus respuestas fueron registradas correctamente. Los datos recolectados serán utilizados exclusivamente con fines académicos.</p>
+      <p class="hint" style="margin-top:12px;">Podés cerrar esta ventana.</p>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ==========================================
+// CONFIG
+// ==========================================
+const SUPABASE_URL     = "TU_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY";
+
+// ==========================================
+// ESTÍMULOS
+// ==========================================
+const STIMULI = [
+  { id: 3,  pool: "DIR_CON",   titular: "No solo el azúcar, el almidón también podría provocar caries", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo de almidón esté asociado con la aparición de caries?" },
+  { id: 14, pool: "DIR_SIN",   titular: "Un estudio revela que ver a alguien enfermo activa el sistema inmunitario", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que ver a alguien enfermo active el sistema inmunitario?" },
+  { id: 25, pool: "NODIR_SIN", titular: "La boca como espejo del corazón: comprueban la relación entre la gingivitis y la aterosclerosis", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que exista una relación entre la gingivitis y la aterosclerosis?" },
+  { id: 1,  pool: "DIR_CON",   titular: "Los perros (pero no los gatos) podrían proteger contra el asma infantil, según un estudio", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que convivir con perros esté asociado con un menor riesgo de asma infantil?" },
+  { id: 12, pool: "DIR_SIN",   titular: "El impacto psicológico del acné: un estudio reveló que aumenta el riesgo de trastornos alimentarios", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el acné aumente el riesgo de trastornos alimentarios?" },
+  { id: 4,  pool: "DIR_CON",   titular: "Siente el ritmo: la música podría ayudar a regular la presión arterial", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que escuchar música ayude a regular la presión arterial?" },
+  { id: 23, pool: "NODIR_SIN", titular: "Científicos vinculan los gases de los autos con la depresión en las mujeres", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la exposición a gases de los autos esté asociada con la depresión en las mujeres?" },
+  { id: 2,  pool: "DIR_CON",   titular: "El envejecimiento inmunológico prematuro podría ser impulsor de artritis reumatoide", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el envejecimiento inmunológico prematuro esté relacionado con la artritis reumatoide?" },
+  { id: 13, pool: "DIR_SIN",   titular: "Las redes sociales agotan la capacidad de concentración de los niños, argumenta un estudio", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el uso de redes sociales agote la capacidad de concentración de los niños?" },
+  { id: 24, pool: "NODIR_SIN", titular: "Los alimentos ultraprocesados se relacionan con riesgo de diabetes en adultos jóvenes", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo de alimentos ultraprocesados esté asociado con un mayor riesgo de diabetes en adultos jóvenes?" },
+  { id: 15, pool: "DIR_SIN",   titular: "La voz de mamá impulsa el desarrollo del habla del bebé en el útero", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la voz de la madre impulse el desarrollo del habla del bebé durante el embarazo?" },
+  { id: 7,  pool: "DIR_CON",   titular: "La pérdida de músculo durante la dieta puede afectar la salud metabólica", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la pérdida de músculo durante una dieta afecte la salud metabólica?" },
+  { id: 27, pool: "NODIR_SIN", titular: "Identifican un vínculo biológico entre el consumo excesivo de marihuana y la psicosis", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo excesivo de marihuana esté relacionado con la psicosis?" },
+  { id: 5,  pool: "DIR_CON",   titular: "Un estudio de Harvard revela que beber café por la mañana podría ayudarte a vivir más", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que beber café por la mañana ayude a vivir más?" },
+  { id: 19, pool: "DIR_SIN",   titular: "Los videojuegos: un eficaz alivio del estrés para jóvenes adultos", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que jugar videojuegos ayude a reducir el estrés en jóvenes adultos?" },
+  { id: 16, pool: "DIR_SIN",   titular: "La agresión sexual triplica el riesgo de suicidio entre los veteranos", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la agresión sexual aumente el riesgo de suicidio entre los veteranos?" },
+  { id: 28, pool: "NODIR_SIN", titular: "Sin azúcar ni crema: un estudio reveló qué tipo de café se asocia con menor riesgo de mortalidad", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo de cierto tipo de café esté asociado con un menor riesgo de mortalidad?" },
+  { id: 6,  pool: "DIR_CON",   titular: "Las personas mayores que socializan pueden vivir más tiempo, confirmó un estudio", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que las personas mayores que socializan vivan más tiempo?" },
+  { id: 17, pool: "DIR_SIN",   titular: "Solo 5 minutos de anuncios de comida chatarra bastan para que los niños coman 130 calorías extra al día", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que una breve exposición a anuncios de comida chatarra haga que los niños consuman más calorías?" },
+  { id: 26, pool: "NODIR_SIN", titular: "Un estudio vinculó el consumo elevado de cúrcuma con el aumento de casos de lesiones hepáticas", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo elevado de cúrcuma esté asociado con un mayor riesgo de lesiones hepáticas?" },
+  { id: 18, pool: "DIR_SIN",   titular: "Comer más temprano ayuda a mantener la pérdida de peso, según un estudio", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que comer más temprano ayude a mantener la pérdida de peso?" },
+  { id: 8,  pool: "DIR_CON",   titular: "COVID puede envejecer prematuramente los vasos sanguíneos", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que haber tenido COVID esté asociado con un envejecimiento prematuro de los vasos sanguíneos?" },
+  { id: 21, pool: "DIR_SIN",   titular: "El uso de teléfonos inteligentes en el baño eleva el riesgo de hemorroides en casi un 50%, según un estudio", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el uso de teléfonos inteligentes en el baño eleve el riesgo de hemorroides en casi un 50%?" },
+  { id: 10, pool: "DIR_CON",   titular: "El cambio climático podría frenar el desarrollo intelectual de los niños", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el cambio climático frene el desarrollo intelectual de los niños?" },
+  { id: 29, pool: "NODIR_SIN", titular: "Dormir mal se vincula con autolesiones entre los adolescentes", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que dormir mal esté asociado con autolesiones en adolescentes?" },
+  { id: 11, pool: "DIR_CON",   titular: "Advierten que las pesadillas frecuentes pueden acelerar el envejecimiento biológico", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que las pesadillas frecuentes aceleren el envejecimiento biológico?" },
+  { id: 22, pool: "DIR_SIN",   titular: "Advierten que la obsesión por el peso en los adolescentes aumenta los riesgos de autolesiones", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la obsesión por el peso en los adolescentes aumente los riesgos de autolesiones?" },
+  { id: 30, pool: "NODIR_SIN", titular: "El acceso temprano a teléfonos inteligentes se asocia con mayor riesgo de malestar emocional", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el acceso temprano a teléfonos inteligentes esté asociado con un mayor malestar emocional?" },
+  { id: 9,  pool: "DIR_CON",   titular: "La contaminación del aire podría acelerar el avance del Alzheimer, según científicos", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la contaminación del aire acelere el avance del Alzheimer?" },
+  { id: 20, pool: "DIR_SIN",   titular: "El consumo excesivo de marihuana aumenta más de 300% el riesgo de cáncer oral", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo excesivo de marihuana aumente más del 300% el riesgo de cáncer oral?" },
+  { id: 31, pool: "NODIR_SIN", titular: "El turno de la noche se asocia con riesgo de asma en las mujeres", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el turno noche esté asociado con riesgo de asma en las mujeres?" },
+  { id: 32, pool: "NODIR_SIN", titular: "Un nuevo estudio vincula el consumo moderado de café con una mejor salud cardiovascular", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que el consumo moderado de café esté vinculado con una mejor salud cardiovascular?" },
+  { id: 33, pool: "NODIR_SIN", titular: "La contaminación del aire se relaciona con tumores cerebrales comunes", pregunta: "Según tu opinión o conocimiento, ¿qué tan probable te parece que la contaminación del aire esté relacionada con tumores cerebrales comunes?" }
+];
+
+// Medios ficticios con colores
+const MEDIA_SOURCES = [
+  { name: "El Cronista Científico",  handle: "@cronistacientif",  color: "#1d9bf0" },
+  { name: "Salud y Ciencia Hoy",     handle: "@saludycienciahoy", color: "#7c4dff" },
+  { name: "La Gaceta Médica",        handle: "@gacetamedica_ar",  color: "#00bfa5" },
+  { name: "InfoSalud Argentina",     handle: "@infosaludarg",     color: "#e91e63" },
+  { name: "Nexo Ciencia",            handle: "@nexociencia",      color: "#ff6d00" },
+  { name: "El Observador Sanitario", handle: "@observadorsanit",  color: "#43a047" },
+  { name: "Ciencia en Foco",         handle: "@cienciaenfoco",    color: "#1565c0" },
+  { name: "Red Salud Global",        handle: "@redsaludglobal",   color: "#ad1457" },
+  { name: "El Diario del Bienestar", handle: "@diariobienestar",  color: "#00838f" },
+  { name: "Medicina Actual",         handle: "@medicinaactual_",  color: "#6d4c41" },
+  { name: "Ciencia y Sociedad AR",   handle: "@cienciaysocied_ar", color: "#f57f17" }
+];
+
+const PROVINCIAS = ["CABA","Buenos Aires","Catamarca","Chaco","Chubut","Córdoba","Corrientes","Entre Ríos","Formosa","Jujuy","La Pampa","La Rioja","Mendoza","Misiones","Neuquén","Río Negro","Salta","San Juan","San Luis","Santa Cruz","Santa Fe","Santiago del Estero","Tierra del Fuego","Tucumán"];
+
+// ==========================================
+// STATE
+// ==========================================
+let participantId = null;
+let demoData      = null;
+let twitterOrder  = []; // índices en STIMULI, con fuente asignada
+let likes         = {}; // stimulusId -> bool
+let causalOrder   = []; // índices en STIMULI
+let causalIdx     = 0;
+let causalStart   = null; // timestamp inicio de ítem
+
+// ==========================================
+// SUPABASE HELPERS
+// ==========================================
+async function sbInsert(table, payload) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Prefer": "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${text}`);
+  return JSON.parse(text);
+}
+
+async function sbPatch(table, matchCol, matchVal, payload) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${matchCol}=eq.${matchVal}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Prefer": "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${text}`);
+  return JSON.parse(text);
+}
+
+// ==========================================
+// UI HELPERS
+// ==========================================
+function setStatus(msg, ok=true) {
+  document.getElementById("statusText").textContent = msg;
+  document.getElementById("statusDot").className = "status-dot" + (ok ? "" : " err");
+}
+
+function showError(msg) {
+  const el = document.getElementById("errorBox");
+  el.textContent = msg;
+  el.classList.add("show");
+  el.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+function clearError() {
+  const el = document.getElementById("errorBox");
+  el.textContent = "";
+  el.classList.remove("show");
+}
+
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+  updateGlobalProgress(id);
+}
+
+const SECTION_PROGRESS = {
+  "sec-consent": 0,
+  "sec-age": 5,
+  "sec-demo": 15,
+  "sec-twitter-intro": 25,
+  "sec-twitter": 35,
+  "sec-causal-intro": 50,
+  "sec-causal": 55,
+  "sec-commit": 95,
+  "sec-end": 100
+};
+function updateGlobalProgress(sectionId) {
+  const pct = SECTION_PROGRESS[sectionId] || 0;
+  document.getElementById("globalProgress").style.width = pct + "%";
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function deriveRegion(p) {
+  return (p === "CABA" || p === "Buenos Aires") ? "AMBA" : "Interior";
+}
+
+// ==========================================
+// INIT
+// ==========================================
+function initProvincias() {
+  const sel = document.getElementById("provincia");
+  PROVINCIAS.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p; o.textContent = p;
+    sel.appendChild(o);
+  });
+}
+
+// ==========================================
+// SECTION: CONSENT
+// ==========================================
+document.getElementById("btn-consent-yes").addEventListener("click", () => {
+  clearError();
+  setStatus("Consentimiento aceptado ✅");
+  showSection("sec-age");
+});
+document.getElementById("btn-consent-no").addEventListener("click", () => {
+  setStatus("Participación cancelada.", false);
+  alert("Gracias. Podés cerrar esta ventana.");
+});
+
+// ==========================================
+// SECTION: AGE
+// ==========================================
+document.getElementById("btn-age-yes").addEventListener("click", () => {
+  clearError();
+  showSection("sec-demo");
+});
+document.getElementById("btn-age-no").addEventListener("click", () => {
+  alert("Este estudio es solo para mayores de 18 años. Podés cerrar esta ventana.");
+});
+
+// ==========================================
+// SECTION: DEMO
+// ==========================================
+document.getElementById("btn-demo-next").addEventListener("click", () => {
+  clearError();
+  try {
+    const edadRaw = document.getElementById("edad").value;
+    const edad = Number(edadRaw);
+    const genero = document.getElementById("genero").value;
+    const provincia = document.getElementById("provincia").value;
+    const educativo = document.getElementById("educativo").value;
+
+    if (!edadRaw || isNaN(edad)) throw new Error("Completá tu edad.");
+    if (edad < 18) throw new Error("Necesitás ser mayor de 18 años.");
+    if (edad > 99) throw new Error("Verificá tu edad.");
+    if (!genero) throw new Error("Seleccioná tu género.");
+    if (!provincia) throw new Error("Seleccioná tu provincia.");
+    if (!educativo) throw new Error("Seleccioná tu nivel educativo.");
+
+    demoData = { edad, genero, provincia, region: deriveRegion(provincia), educativo };
+    setStatus("Datos OK ✅");
+    showSection("sec-twitter-intro");
+  } catch(e) { showError(e.message); }
+});
+
+// ==========================================
+// SECTION: TWITTER INTRO
+// ==========================================
+document.getElementById("btn-twitter-start").addEventListener("click", () => {
+  clearError();
+  buildTwitterFeed();
+  showSection("sec-twitter");
+});
+
+// ==========================================
+// BUILD TWITTER FEED
+// ==========================================
+function buildTwitterFeed() {
+  const feed = document.getElementById("twFeed");
+  feed.innerHTML = "";
+
+  // Aleatorizar estímulos y asignar fuente aleatoriamente (independiente entre usuarios)
+  twitterOrder = shuffle(STIMULI.map((s, i) => i));
+
+  // Para cada estímulo, asignamos una fuente aleatoria (puede repetir, es como Twitter)
+  // Guardamos la asignación fuente->estímulo para Supabase
+  twitterOrder.forEach((stimIdx, position) => {
+    const stim = STIMULI[stimIdx];
+    const sourceIdx = Math.floor(Math.random() * MEDIA_SOURCES.length);
+    const source = MEDIA_SOURCES[sourceIdx];
+
+    // Guardamos en el objeto para logging
+    stim._twitterPosition = position + 1;
+    stim._sourceIdx = sourceIdx;
+
+    const hoursAgo    = Math.floor(Math.random() * 20) + 1;
+    const timeStr     = hoursAgo === 1 ? "1h" : `${hoursAgo}h`;
+    const likes_count = Math.floor(Math.random() * 301) + 500;  // 500–800
+    const retweets    = Math.floor(Math.random() * 201) + 100;  // 100–300
+    const replies     = Math.floor(Math.random() * 51)  + 30;   // 30–80
+
+    // Guardamos contadores para Supabase
+    stim._likes_count = likes_count;
+    stim._retweets    = retweets;
+    stim._replies     = replies;
+    stim._hoursAgo    = hoursAgo;
+
+    const initials = source.name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+
+    const tweet = document.createElement("div");
+    tweet.className = "tweet";
+    tweet.dataset.stimId = stim.id;
+
+    tweet.innerHTML = `
+      <div class="tweet-avatar" style="background:${source.color};">${initials}</div>
+      <div class="tweet-body">
+        <div class="tweet-meta">
+          <span class="tweet-name">${source.name}</span>
+          <span class="tweet-handle">${source.handle}</span>
+          <span class="tweet-time">· ${timeStr}</span>
+        </div>
+        <div class="tweet-text">${stim.titular}</div>
+        <div class="tweet-actions">
+          <button class="tweet-action" data-action="reply">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            ${replies}
+          </button>
+          <button class="tweet-action" data-action="retweet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+            ${retweets}
+          </button>
+          <button class="tweet-action like-btn" data-stim-id="${stim.id}" data-action="like">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span class="like-count">${likes_count}</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    feed.appendChild(tweet);
+  });
+
+  // Like handler
+  feed.addEventListener("click", (e) => {
+    const likeBtn = e.target.closest(".like-btn");
+    if (!likeBtn) return;
+    const stimId = Number(likeBtn.dataset.stimId);
+    const isLiked = likes[stimId] || false;
+    likes[stimId] = !isLiked;
+
+    const svg = likeBtn.querySelector("svg");
+    const countEl = likeBtn.querySelector(".like-count");
+    const currentCount = parseInt(countEl.textContent);
+
+    if (likes[stimId]) {
+      likeBtn.classList.add("liked");
+      svg.setAttribute("fill", "#f91880");
+      svg.setAttribute("stroke", "#f91880");
+      countEl.textContent = currentCount + 1;
+    } else {
+      likeBtn.classList.remove("liked");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      countEl.textContent = currentCount - 1;
+    }
+  });
+
+  // Mostrar botón continuar al final del feed
+  document.getElementById("twScrollHint").style.display = "block";
+}
+
+// ==========================================
+// TWITTER DONE
+// ==========================================
+document.getElementById("btn-twitter-done").addEventListener("click", async () => {
+  clearError();
+  const btn = document.getElementById("btn-twitter-done");
+  btn.disabled = true;
+  btn.textContent = "Guardando…";
+
+  try {
+    setStatus("Guardando datos…");
+
+    // Construir payload del participante
+    const twitterOrderIds = twitterOrder.map(i => STIMULI[i].id);
+    const twitterSources  = twitterOrder.map(i => MEDIA_SOURCES[STIMULI[i]._sourceIdx].name);
+    const likedIds        = Object.entries(likes).filter(([,v]) => v).map(([k]) => Number(k));
+
+    // Insertar participante
+    const participantPayload = {
+      ...demoData,
+      twitter_order:   JSON.stringify(twitterOrderIds),
+      twitter_sources: JSON.stringify(twitterSources),
+      liked_ids:       JSON.stringify(likedIds),
+      started_at:      new Date().toISOString()
+    };
+
+    const inserted = await sbInsert("participants", participantPayload);
+    participantId = inserted[0].id;
+
+    // Insertar filas de twitter_feed (una por estímulo visto)
+    const twitterRows = twitterOrder.map((stimIdx, pos) => {
+      const stim = STIMULI[stimIdx];
+      return {
+        participant_id:   participantId,
+        stimulus_id:      stim.id,
+        pool:             stim.pool,
+        twitter_position: pos + 1,
+        source_name:      MEDIA_SOURCES[stim._sourceIdx].name,
+        source_handle:    MEDIA_SOURCES[stim._sourceIdx].handle,
+        hours_ago:        stim._hoursAgo,
+        displayed_likes:  stim._likes_count,
+        displayed_rts:    stim._retweets,
+        displayed_replies: stim._replies,
+        liked:            likes[stim.id] || false
+      };
+    });
+    // Insertar en lotes de 10
+    for (let i = 0; i < twitterRows.length; i += 10) {
+      await sbInsert("twitter_feed", twitterRows.slice(i, i+10));
+    }
+
+    setStatus("Feed guardado ✅");
+
+    // Preparar orden causalidad (independiente del orden de twitter)
+    causalOrder = shuffle(STIMULI.map((_, i) => i));
+    causalIdx   = 0;
+
+    showSection("sec-causal-intro");
+
+  } catch(err) {
+    console.error(err);
+    showError("Error al guardar: " + err.message);
+    setStatus("Error ❌", false);
+    btn.disabled = false;
+    btn.textContent = "Ya revisé todos los titulares → Continuar";
+  }
+});
+
+// ==========================================
+// CAUSALIDAD
+// ==========================================
+document.getElementById("btn-causal-start").addEventListener("click", () => {
+  clearError();
+  renderCausalTrial();
+  showSection("sec-causal");
+});
+
+// Slider update
+const causalSlider = document.getElementById("causalSlider");
+causalSlider.addEventListener("input", () => {
+  const val = causalSlider.value;
+  document.getElementById("causalSliderVal").textContent = val;
+  causalSlider.style.setProperty("--val", val + "%");
+});
+// Init slider visual
+causalSlider.style.setProperty("--val", "50%");
+
+function renderCausalTrial() {
+  const stimIdx = causalOrder[causalIdx];
+  const stim    = STIMULI[stimIdx];
+
+  // Fuente aleatoria para mostrar contexto visual
+  const srcIdx  = Math.floor(Math.random() * MEDIA_SOURCES.length);
+  document.getElementById("causalSource").textContent   = MEDIA_SOURCES[srcIdx].name;
+  document.getElementById("causalHeadline").textContent = stim.titular;
+  document.getElementById("causalQuestion").textContent = stim.pregunta;
+
+  // Reset slider
+  causalSlider.value = 50;
+  document.getElementById("causalSliderVal").textContent = "50";
+  causalSlider.style.setProperty("--val", "50%");
+
+  // Progress
+  const n = STIMULI.length;
+  document.getElementById("causalProgress").textContent = `Ítem ${causalIdx+1} de ${n}`;
+  document.getElementById("causalBar").style.width = ((causalIdx / n) * 100) + "%";
+
+  causalStart = performance.now();
+}
+
+document.getElementById("btn-causal-next").addEventListener("click", async () => {
+  clearError();
+  const btn = document.getElementById("btn-causal-next");
+  btn.disabled = true;
+  btn.textContent = "Guardando…";
+
+  try {
+    const stimIdx = causalOrder[causalIdx];
+    const stim    = STIMULI[stimIdx];
+    const value   = Number(causalSlider.value);
+    const rt_ms   = causalStart ? Math.round(performance.now() - causalStart) : null;
+
+    await sbInsert("causal_responses", {
+      participant_id:  participantId,
+      stimulus_id:     stim.id,
+      pool:            stim.pool,
+      causal_position: causalIdx + 1,
+      causal_value:    value,
+      rt_ms:           rt_ms
+    });
+
+    causalIdx++;
+    if (causalIdx >= STIMULI.length) {
+      // Guardar orden causalidad en participant
+      const causalOrderIds = causalOrder.map(i => STIMULI[i].id);
+      await sbPatch("participants", "id", participantId, {
+        causal_order: JSON.stringify(causalOrderIds)
+      });
+
+      document.getElementById("causalBar").style.width = "100%";
+      showSection("sec-commit");
+      setStatus("Tarea completada ✅");
+    } else {
+      renderCausalTrial();
+      btn.disabled = false;
+      btn.textContent = "Siguiente →";
+    }
+
+  } catch(err) {
+    console.error(err);
+    showError("Error al guardar: " + err.message);
+    setStatus("Error ❌", false);
+    btn.disabled = false;
+    btn.textContent = "Siguiente →";
+  }
+});
+
+// ==========================================
+// COMPROMISO
+// ==========================================
+async function finalize(committed) {
+  clearError();
+  document.getElementById("btn-commit-yes").disabled = true;
+  document.getElementById("btn-commit-no").disabled  = true;
+  try {
+    await sbPatch("participants", "id", participantId, {
+      compromiso:   committed,
+      completed_at: new Date().toISOString()
+    });
+    showSection("sec-end");
+    setStatus("Finalizado ✅");
+  } catch(err) {
+    console.error(err);
+    showError("Error al finalizar: " + err.message);
+    setStatus("Error ❌", false);
+    document.getElementById("btn-commit-yes").disabled = false;
+    document.getElementById("btn-commit-no").disabled  = false;
+  }
+}
+
+document.getElementById("btn-commit-yes").addEventListener("click", () => finalize(true));
+document.getElementById("btn-commit-no")
